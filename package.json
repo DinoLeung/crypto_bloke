@@ -16,7 +16,7 @@
     "email": "dino@330z.net",
     "url": "https://github.com/DinoLeung/"
   },
-  "main": "main.js",
+  "main": "src/main.js",
   "scripts": {
     "test": "xo",
     "start": "electron .",
@@ -26,7 +26,10 @@
     "electron-app",
     "electron"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.16.2",
+    "socket.io-client": "^2.0.4"
+  },
   "devDependencies": {
     "devtron": "^1.1.0",
     "electron-debug": "^1.0.0",
