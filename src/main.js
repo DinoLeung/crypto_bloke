@@ -1,8 +1,7 @@
-const {app, BrowserWindow, net} = require("electron");
+const {app, BrowserWindow} = require("electron");
 const path = require("path");
 const url = require("url");
-const io = require("socket.io-client");
-const coincap = "https://coincap.io/";
+var coinCap = require("./coinCap");
 
 // adds debug features like hotkeys for triggering dev tools and reload
 require("electron-debug")();
@@ -10,24 +9,24 @@ require("electron-debug")();
 // prevent window being garbage collected
 let mainWindow;
 
-var coinList, coinData;
+// var coinList, coinData;
 
 app.on("ready", () => {
 	mainWindow = createMainWindow();
-	
+
 	//Get initial data from CoinCap
-	coincapGet("map").then((body) => {
-		//get list of coin name, symbol
-		coinList = body;
-		return coincapGet("front");
-	}).then((body) => {
-		//get list of coin price data
-		coinData = body;
-	}).then(() => {
-		//subscript to wesocket, get coinData update
-		subscribeCoincapSocket();
+	coinCap.fetchCoinData((error) => {
+		if (error) console.log(error);
+		else coinCap.connectSocket();
 	});
-	
+	coinCap.fetchCoinName((error) => {
+		if (error) console.log(error);
+		else console.log("coinName");
+	});
+	coinCap.fetchExchangeRate((error) => {
+		if (error) console.log(error);
+		else console.log("exchangeRate");
+	});
 });
 
 app.on("activate", () => {
@@ -54,41 +53,6 @@ function createMainWindow() {
 	}));
 	win.on("closed", onClosed);
 	return win;
-}
-
-function coincapGet(key){
-	return new Promise(function(resolve, reject) {
-		var request = net.request(coincap + key);
-		request.on("response", (response) => {
-			if (response.statusCode < 200 || response.statusCode >= 300)
-				return reject(new Error("statusCode=" + response.statusCode));
-			var body = [];
-			response.on("data", (chunk) => body.push(chunk));
-			response.on("end", () => {
-				try {
-					body = JSON.parse(Buffer.concat(body).toString());
-				} catch(e) {
-					reject(e);
-				}
-				resolve(body);
-			});
-		});
-		request.on("error", (error) => {
-			reject(error);
-		});
-		request.end();
-	});
-}
-
-function subscribeCoincapSocket() {
-	//Socket.io
-	var socket = io(coincap);
-	socket.on("trades", function(message) {
-		//update coinData
-		var index = coinData.findIndex(obj => obj.short === message.coin);
-		// var raise = message.msg.price > coinData[index].price;
-		coinData[index] = message.msg;
-	});
 }
 
 function onClosed() {
