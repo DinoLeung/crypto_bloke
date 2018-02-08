@@ -1,7 +1,7 @@
 const {app, BrowserWindow} = require('electron')
 const path = require('path')
 const url = require('url')
-var coinCap = require('./coinCap')
+var CoinCap = require('./coinCap')
 
 // adds debug features like hotkeys for triggering dev tools and reload
 require('electron-debug')()
@@ -15,18 +15,16 @@ app.on('ready', () => {
   mainWindow = createMainWindow()
 
   // Get initial data from CoinCap
-  coinCap.fetchCoinData((error) => {
-    if (error) console.log(error)
-    else coinCap.connectSocket()
-  })
-  coinCap.fetchCoinName((error) => {
-    if (error) console.log(error)
-    else console.log('coinName')
-  })
-  coinCap.fetchExchangeRate((error) => {
-    if (error) console.log(error)
-    else console.log('exchangeRate')
-  })
+  CoinCap.fetchCoinName()
+    .then(() => { return CoinCap.fetchExchangeRate() })
+    .then(() => { return CoinCap.fetchCoinData() })
+    .then(() => {
+      console.log(CoinCap.coinData.length)
+      console.log(CoinCap.coinData.length)
+      console.log(CoinCap.exchangeRate.HKD)
+      CoinCap.connectSocket()
+    })
+    .catch((error) => { console.log(error) })
 })
 
 app.on('activate', () => {

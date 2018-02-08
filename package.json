@@ -27,7 +27,6 @@
     "electron"
   ],
   "dependencies": {
-    "express": "^4.16.2",
     "socket.io-client": "^2.0.4"
   },
   "devDependencies": {

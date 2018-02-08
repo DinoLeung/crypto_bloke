@@ -1,10 +1,10 @@
 const electron = require('electron')
 const io = require('socket.io-client')
-const API = 'https://coincap.io/'
+const api = 'https://coincap.io/'
 
 function fetch (key) {
-  return new Promise(function (resolve, reject) {
-    var request = electron.net.request(API + key)
+  return new Promise((resolve, reject) => {
+    var request = electron.net.request(api + key)
     request.on('response', (response) => {
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return reject(new Error('statusCode=' + response.statusCode))
@@ -32,35 +32,41 @@ var coinCap = module.exports = {
   coinName: [],
   exchangeRate: [],
 
-  fetchCoinData: function (callback) {
-    fetch('front').then((body) => {
-      coinCap.coinData = body
-      return callback()
-    }).catch((error) => {
-      return callback(error)
+  fetchCoinData: function () {
+    return new Promise((resolve, reject) => {
+      fetch('front').then((body) => {
+        coinCap.coinData = body
+        resolve()
+      }).catch((error) => {
+        reject(error)
+      })
     })
   },
 
-  fetchCoinName: function (callback) {
-    fetch('map').then((body) => {
-      coinCap.coinName = body
-      return callback()
-    }).catch((error) => {
-      return error
+  fetchCoinName: function () {
+    return new Promise((resolve, reject) => {
+      fetch('map').then((body) => {
+        coinCap.coinName = body
+        resolve()
+      }).catch((error) => {
+        reject(error)
+      })
     })
   },
 
-  fetchExchangeRate: function (callback) {
-    fetch('exchange_rates').then((body) => {
-      coinCap.exchangeRate = body.rates
-      return callback()
-    }).catch((error) => {
-      return callback(error)
+  fetchExchangeRate: function () {
+    return new Promise((resolve, reject) => {
+      fetch('exchange_rates').then((body) => {
+        coinCap.exchangeRate = body.rates
+        resolve()
+      }).catch((error) => {
+        reject(error)
+      })
     })
   },
 
   connectSocket: function () {
-    var socket = io(API)
+    var socket = io(api)
     socket.on('trades', function (message) {
       // update coinData
       var index = coinCap.coinData.findIndex(obj => obj.short === message.coin)
