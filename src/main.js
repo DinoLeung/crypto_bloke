@@ -3,25 +3,27 @@ const path = require('path')
 const url = require('url')
 var CoinCap = require('./coinCap')
 
+const Events = require('events')
+// declare a global event object for CoinCap socket updates
+global.coinCapSocketEmitter = new Events()
+
 // adds debug features like hotkeys for triggering dev tools and reload
-require('electron-debug')()
+// require('electron-debug')()
+const devMode = true
 
 // prevent window being garbage collected
 let mainWindow
-
-// var coinList, coinData;
 
 app.on('ready', () => {
   mainWindow = createMainWindow()
 
   // Get initial data from CoinCap
-  CoinCap.fetchCoinName()
-    .then(() => { return CoinCap.fetchExchangeRate() })
-    .then(() => { return CoinCap.fetchCoinData() })
+  CoinCap.fetchCoinData()
+    // .then(() => { return CoinCap.fetchExchangeRate() })
+    // .then(() => { return CoinCap.fetchCoinName() })
     .then(() => {
-      console.log(CoinCap.coinData.length)
-      console.log(CoinCap.coinData.length)
-      console.log(CoinCap.exchangeRate.HKD)
+      // send ready event to mainWindow
+      mainWindow.webContents.send('ready')
       CoinCap.connectSocket()
     })
     .catch((error) => { console.log(error) })
@@ -31,6 +33,12 @@ app.on('activate', () => {
   if (!mainWindow) {
     mainWindow = createMainWindow()
   }
+})
+
+// catch update events from CoinCap
+global.coinCapSocketEmitter.on('coinCap-update', (index) => {
+  // send update event to mainWindow
+  mainWindow.webContents.send('update', index)
 })
 
 app.on('window-all-closed', () => {
@@ -49,6 +57,10 @@ function createMainWindow () {
     protocol: 'file:',
     slashes: true
   }))
+
+  // show dev tool
+  if (devMode) win.webContents.openDevTools()
+
   win.on('closed', onClosed)
   return win
 }

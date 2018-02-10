@@ -1,10 +1,10 @@
-const electron = require('electron')
+const {net} = require('electron')
 const io = require('socket.io-client')
 const api = 'https://coincap.io/'
 
 function fetch (key) {
   return new Promise((resolve, reject) => {
-    var request = electron.net.request(api + key)
+    var request = net.request(api + key)
     request.on('response', (response) => {
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return reject(new Error('statusCode=' + response.statusCode))
@@ -27,7 +27,7 @@ function fetch (key) {
   })
 }
 
-var coinCap = module.exports = {
+module.exports = {
   coinData: [],
   coinName: [],
   exchangeRate: [],
@@ -35,7 +35,7 @@ var coinCap = module.exports = {
   fetchCoinData: function () {
     return new Promise((resolve, reject) => {
       fetch('front').then((body) => {
-        coinCap.coinData = body
+        this.coinData = body
         resolve()
       }).catch((error) => {
         reject(error)
@@ -46,7 +46,7 @@ var coinCap = module.exports = {
   fetchCoinName: function () {
     return new Promise((resolve, reject) => {
       fetch('map').then((body) => {
-        coinCap.coinName = body
+        this.coinName = body
         resolve()
       }).catch((error) => {
         reject(error)
@@ -57,7 +57,7 @@ var coinCap = module.exports = {
   fetchExchangeRate: function () {
     return new Promise((resolve, reject) => {
       fetch('exchange_rates').then((body) => {
-        coinCap.exchangeRate = body.rates
+        this.exchangeRate = body.rates
         resolve()
       }).catch((error) => {
         reject(error)
@@ -67,11 +67,18 @@ var coinCap = module.exports = {
 
   connectSocket: function () {
     var socket = io(api)
-    socket.on('trades', function (message) {
+    socket.on('trades', (message) => {
       // update coinData
-      var index = coinCap.coinData.findIndex(obj => obj.short === message.coin)
+      var index = this.coinData.findIndex(obj => obj.short === message.coin)
       // var raise = message.msg.price > coinData[index].price;
-      coinCap.coinData[index] = message.msg
+      if (index < 0) {
+        this.coinData.push(message.msg)
+        index = global.coinData.length - 1
+      } else {
+        this.coinData[index] = message.msg
+      }
+      // send update event to main process
+      global.coinCapSocketEmitter.emit('coinCap-update', index)
     })
   }
 }
