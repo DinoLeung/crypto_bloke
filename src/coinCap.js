@@ -1,10 +1,10 @@
-const {net} = require('electron')
+const https = require('https')
 const io = require('socket.io-client')
 const api = 'https://coincap.io/'
 
 function fetch (key) {
   return new Promise((resolve, reject) => {
-    var request = net.request(api + key)
+    var request = https.request(api + key)
     request.on('response', (response) => {
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return reject(new Error('statusCode=' + response.statusCode))
