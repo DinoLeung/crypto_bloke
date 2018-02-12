@@ -31,6 +31,7 @@ module.exports = {
   coinData: [],
   coinName: [],
   exchangeRate: [],
+  socket: undefined,
 
   fetchCoinData: function () {
     return new Promise((resolve, reject) => {
@@ -66,19 +67,19 @@ module.exports = {
   },
 
   connectSocket: function () {
-    var socket = io(api)
-    socket.on('trades', (message) => {
-      // update coinData
-      var index = this.coinData.findIndex(obj => obj.short === message.coin)
-      // var raise = message.msg.price > coinData[index].price;
-      if (index < 0) {
-        this.coinData.push(message.msg)
-        index = global.coinData.length - 1
-      } else {
-        this.coinData[index] = message.msg
-      }
-      // send update event to main process
-      global.coinCapSocketEmitter.emit('coinCap-update', index)
-    })
+    this.socket = io(api)
+    // socket.on('trades', (message) => {
+    //   // update coinData
+    //   var index = this.coinData.findIndex(obj => obj.short === message.coin)
+    //   // var raise = message.msg.price > coinData[index].price;
+    //   if (index < 0) {
+    //     this.coinData.push(message.msg)
+    //     index = global.coinData.length - 1
+    //   } else {
+    //     this.coinData[index] = message.msg
+    //   }
+    //   // send update event to main process
+    //   // global.coinCapSocketEmitter.emit('coinCap-update', index)
+    // })
   }
 }

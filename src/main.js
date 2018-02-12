@@ -1,7 +1,7 @@
 const {app, BrowserWindow} = require('electron')
 const path = require('path')
 const url = require('url')
-var CoinCap = require('./coinCap')
+// var CoinCap = require('./coinCap')
 
 const Events = require('events')
 // declare a global event object for CoinCap socket updates
@@ -18,15 +18,15 @@ app.on('ready', () => {
   mainWindow = createMainWindow()
 
   // Get initial data from CoinCap
-  CoinCap.fetchCoinData()
-    // .then(() => { return CoinCap.fetchExchangeRate() })
-    // .then(() => { return CoinCap.fetchCoinName() })
-    .then(() => {
-      // send ready event to mainWindow
-      mainWindow.webContents.send('ready')
-      CoinCap.connectSocket()
-    })
-    .catch((error) => { console.log(error) })
+  // CoinCap.fetchCoinData()
+  // .then(() => { return CoinCap.fetchExchangeRate() })
+  // .then(() => { return CoinCap.fetchCoinName() })
+  // .then(() => {
+  // send ready event to mainWindow
+  //   mainWindow.webContents.send('ready')
+  //   CoinCap.connectSocket()
+  // })
+  // .catch((error) => { console.log(error) })
 })
 
 app.on('activate', () => {
@@ -36,10 +36,10 @@ app.on('activate', () => {
 })
 
 // catch update events from CoinCap
-global.coinCapSocketEmitter.on('coinCap-update', (index) => {
-  // send update event to mainWindow
-  mainWindow.webContents.send('update', index)
-})
+// global.coinCapSocketEmitter.on('coinCap-update', (index) => {
+//   // send update event to mainWindow
+//   mainWindow.webContents.send('update', index)
+// })
 
 app.on('window-all-closed', () => {
   // if (process.platform !== "darwin")
